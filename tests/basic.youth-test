@@ -1,0 +1,23 @@
+mount
+expect text display "0"
+
+activate digit-1
+activate decimal
+activate digit-5
+activate add
+activate digit-2
+activate equals
+expect text display "3.5"
+
+restart
+expect text display "3.5"
+
+activate equals
+expect text display "5.5"
+
+activate clear
+activate digit-1
+activate divide
+activate digit-3
+activate equals
+expect text display "0.333333333333"
