@@ -19,6 +19,7 @@ automatically authorize platform features.
 | CALC-F003 | The external app needs no raw WIT concepts | Addressed | Preserve the DP0 SDK boundary while adding capabilities |
 | CALC-F005 | Semantic tests initially treated aligned text as a different role | Addressed | Test normalized semantic roles, not compact host representation variants |
 | CALC-F006 | Git SDK resolution inspected an invalid template placeholder manifest | Addressed | Embedded source templates must remain syntactically valid before rendering |
+| CALC-F007 | Activation-only tests could not prove keyboard policy | Addressed | Test logical keys and semantic focus through the host interaction layer |
 
 ## CALC-F001 — DP0 presentation cannot express a calculator layout
 
@@ -149,3 +150,26 @@ automatically authorize platform features.
 - **Resolution:** The template uses a valid package-name sentinel that the
   generator replaces, and its source directory is explicitly excluded from
   workspace discovery. Templates must be valid before rendering.
+
+## CALC-F007 — Activation-only tests could not prove keyboard policy
+
+- **Status:** Addressed
+- **Observed:** 2026-07-21
+- **Application:** Youth Calculator
+- **Workflow stage:** Gate C acceptance test
+- **Platform:** Headless, real Youth runtime
+- **Local path:** `/Users/keina/dev/youth-calculator`
+- **Evidence:** `activate <node>` proved guest behavior but bypassed host-owned
+  Tab/arrow focus, default/cancel keys, and logical shortcut resolution.
+- **Developer impact:** Native keyboard behavior could regress while semantic
+  application tests stayed green.
+- **What could not be expressed:** A host logical-key input and semantic focus
+  assertion without native scan codes.
+- **What leaked WIT details:** None; keys terminate in the host interaction
+  state machine and the guest still receives ordinary node activation.
+- **What required host policy:** Focus traversal, logical key matching, and
+  Enter/Escape/Backspace precedence.
+- **Resolution:** The deliberately narrow DSL adds `key` and `expect focus`.
+  The calculator test now covers Tab, row arrows, Shift+Tab, character
+  shortcuts, Enter/default, Escape/cancel, restart focus clearing, persistence,
+  and a direct semantic activation in one real-runtime scenario.

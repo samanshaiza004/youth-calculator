@@ -1,21 +1,35 @@
 mount
 expect text display "0"
+expect focus none
 
-activate digit-1
-activate decimal
-activate digit-5
-activate add
-activate digit-2
-activate equals
+key tab
+expect focus clear
+key right
+expect focus backspace
+key shift-tab
+expect focus clear
+
+key "1"
+key "."
+key "5"
+key "+"
+key "2"
+key enter
 expect text display "3.5"
+expect focus equals
 
 restart
 expect text display "3.5"
+expect focus none
 
-activate equals
+key enter
 expect text display "5.5"
+expect focus equals
 
-activate clear
+key escape
+expect text display "0"
+expect focus clear
+
 activate digit-1
 activate divide
 activate digit-3
