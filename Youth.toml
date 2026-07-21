@@ -1,7 +1,7 @@
 [app]
 id = "dev.saman.calculator"
 name = "Calculator"
-protocol = "0.0.2"
+protocol = "0.0.3"
 
 [build]
 language = "rust"

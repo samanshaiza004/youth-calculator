@@ -1,5 +1,5 @@
 use youth_sdk::prelude::*;
-use youth_sdk::{StateReader, StateWriter};
+use youth_sdk::{Element, StateReader, StateWriter};
 
 use crate::model::{Command, Decimal, Entry, Mode, Model, Operator};
 
@@ -8,27 +8,36 @@ pub(crate) struct Calculator;
 impl Application for Calculator {
     fn view(context: &ViewContext) -> Result<Tree> {
         let model = load(context.state())?;
-        Ok(Tree::root(BoxNode::column([
-            Text::new(node!("display"), model.display()),
-            Button::new(node!("clear"), "C"),
-            Button::new(node!("backspace"), "Backspace"),
-            Button::new(node!("toggle-sign"), "+/-"),
-            Button::new(node!("divide"), "/"),
-            Button::new(node!("digit-7"), "7"),
-            Button::new(node!("digit-8"), "8"),
-            Button::new(node!("digit-9"), "9"),
-            Button::new(node!("multiply"), "*"),
-            Button::new(node!("digit-4"), "4"),
-            Button::new(node!("digit-5"), "5"),
-            Button::new(node!("digit-6"), "6"),
-            Button::new(node!("subtract"), "-"),
-            Button::new(node!("digit-1"), "1"),
-            Button::new(node!("digit-2"), "2"),
-            Button::new(node!("digit-3"), "3"),
-            Button::new(node!("add"), "+"),
-            Button::new(node!("digit-0"), "0"),
-            Button::new(node!("decimal"), "."),
-            Button::new(node!("equals"), "="),
+        Ok(Tree::root(Column::new([
+            Text::new(node!("display"), model.display()).align(TextAlign::End),
+            Row::new([
+                Button::command(command!("clear"), "C").shortcut(Shortcut::Escape),
+                Button::command(command!("backspace"), "Backspace").shortcut(Shortcut::Backspace),
+                Button::command(command!("toggle-sign"), "+/-"),
+                Button::command(command!("divide"), "/").shortcut(Shortcut::Character('/')),
+            ]),
+            Grid::columns(
+                4,
+                [
+                    button("digit-7", "7", '7'),
+                    button("digit-8", "8", '8'),
+                    button("digit-9", "9", '9'),
+                    Button::command(command!("multiply"), "*").shortcut(Shortcut::Character('*')),
+                    button("digit-4", "4", '4'),
+                    button("digit-5", "5", '5'),
+                    button("digit-6", "6", '6'),
+                    Button::command(command!("subtract"), "-").shortcut(Shortcut::Character('-')),
+                    button("digit-1", "1", '1'),
+                    button("digit-2", "2", '2'),
+                    button("digit-3", "3", '3'),
+                    Button::command(command!("add"), "+").shortcut(Shortcut::Character('+')),
+                    button("digit-0", "0", '0'),
+                    Button::command(command!("decimal"), ".").shortcut(Shortcut::Character('.')),
+                    Button::command(command!("equals"), "=")
+                        .shortcut(Shortcut::Character('='))
+                        .shortcut(Shortcut::Enter),
+                ],
+            ),
         ])))
     }
 
@@ -49,29 +58,33 @@ impl Application for Calculator {
 
 fn command(events: &Events) -> Option<Command> {
     let commands = [
-        (node!("clear"), Command::Clear),
-        (node!("backspace"), Command::Backspace),
-        (node!("toggle-sign"), Command::ToggleSign),
-        (node!("divide"), Command::Operator(Operator::Divide)),
-        (node!("digit-7"), Command::Digit(7)),
-        (node!("digit-8"), Command::Digit(8)),
-        (node!("digit-9"), Command::Digit(9)),
-        (node!("multiply"), Command::Operator(Operator::Multiply)),
-        (node!("digit-4"), Command::Digit(4)),
-        (node!("digit-5"), Command::Digit(5)),
-        (node!("digit-6"), Command::Digit(6)),
-        (node!("subtract"), Command::Operator(Operator::Subtract)),
-        (node!("digit-1"), Command::Digit(1)),
-        (node!("digit-2"), Command::Digit(2)),
-        (node!("digit-3"), Command::Digit(3)),
-        (node!("add"), Command::Operator(Operator::Add)),
-        (node!("digit-0"), Command::Digit(0)),
-        (node!("decimal"), Command::DecimalPoint),
-        (node!("equals"), Command::Equals),
+        (command!("clear"), Command::Clear),
+        (command!("backspace"), Command::Backspace),
+        (command!("toggle-sign"), Command::ToggleSign),
+        (command!("divide"), Command::Operator(Operator::Divide)),
+        (command!("digit-7"), Command::Digit(7)),
+        (command!("digit-8"), Command::Digit(8)),
+        (command!("digit-9"), Command::Digit(9)),
+        (command!("multiply"), Command::Operator(Operator::Multiply)),
+        (command!("digit-4"), Command::Digit(4)),
+        (command!("digit-5"), Command::Digit(5)),
+        (command!("digit-6"), Command::Digit(6)),
+        (command!("subtract"), Command::Operator(Operator::Subtract)),
+        (command!("digit-1"), Command::Digit(1)),
+        (command!("digit-2"), Command::Digit(2)),
+        (command!("digit-3"), Command::Digit(3)),
+        (command!("add"), Command::Operator(Operator::Add)),
+        (command!("digit-0"), Command::Digit(0)),
+        (command!("decimal"), Command::DecimalPoint),
+        (command!("equals"), Command::Equals),
     ];
     commands
         .into_iter()
-        .find_map(|(node, command)| events.activated(node).then_some(command))
+        .find_map(|(key, command)| events.commanded(key).then_some(command))
+}
+
+fn button(name: &'static str, label: &'static str, shortcut: char) -> Element {
+    Button::command(CommandKey::new(name), label).shortcut(Shortcut::Character(shortcut))
 }
 
 trait ReadState: Copy {

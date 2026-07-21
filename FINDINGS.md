@@ -8,20 +8,21 @@ automatically authorize platform features.
 
 | ID | Summary | Next decision |
 | --- | --- | --- |
-| CALC-F001 | DP0 presentation cannot express a calculator layout | Add only the semantic layout/alignment data proved necessary here |
-| CALC-F002 | Command dispatch and canonical state persistence are repetitive | Reassess after the protocol-backed command API exists |
+| CALC-F002 | Canonical state persistence remains repetitive | Keep explicit typed state until another app proves a common structured-state shape |
 
 ## Findings index
 
 | ID | Summary | Status | Primary implication |
 | --- | --- | --- | --- |
-| CALC-F001 | DP0 presentation cannot express a calculator layout | Open | Protocol needs row/grid intent and end text alignment |
-| CALC-F002 | Command dispatch and canonical state persistence are repetitive | Open | Commands may be SDK-owned; structured state remains unproven |
+| CALC-F001 | DP0 presentation cannot express a calculator layout | Addressed | Protocol `0.0.3` carries bounded layout/alignment/shortcut intent |
+| CALC-F002 | Command dispatch and canonical state persistence are repetitive | Deferred | SDK commands remove ID pairing; structured state remains unproven |
 | CALC-F003 | The external app needs no raw WIT concepts | Addressed | Preserve the DP0 SDK boundary while adding capabilities |
+| CALC-F005 | Semantic tests initially treated aligned text as a different role | Addressed | Test normalized semantic roles, not compact host representation variants |
+| CALC-F006 | Git SDK resolution inspected an invalid template placeholder manifest | Addressed | Embedded source templates must remain syntactically valid before rendering |
 
 ## CALC-F001 — DP0 presentation cannot express a calculator layout
 
-- **Status:** Open
+- **Status:** Addressed
 - **Observed:** 2026-07-21
 - **Application:** Youth Calculator
 - **Workflow stage:** Initial `Application::view`
@@ -48,12 +49,13 @@ automatically authorize platform features.
   number formatting.
 - **Impact:** Functional headless behavior is available, but native usability
   and reasonable window size are blocked.
-- **Resolution:** Pending protocol `0.0.3`, renderer evidence, and conversion of
-  this exact app without raw protocol code.
+- **Resolution:** Protocol `0.0.3` now expresses a four-control row, equal-track
+  four-column keypad, end-aligned display, and logical shortcuts. The converted
+  app contains no geometry or raw protocol code.
 
 ## CALC-F002 — Command dispatch and canonical state persistence are repetitive
 
-- **Status:** Open
+- **Status:** Deferred
 - **Observed:** 2026-07-21
 - **Application:** Youth Calculator
 - **Workflow stage:** Initial event and persistence adapter
@@ -78,8 +80,10 @@ automatically authorize platform features.
 - **What remains SDK/application behavior:** Distinct `CommandId`, command
   builders, `Events::commanded`, and the calculator's persistence adapter.
 - **Impact:** Source verbosity and risk of mismatched symbolic names.
-- **Resolution:** Reassess after the DP1 SDK command API. Do not add structured
-  state until another app proves the same pattern.
+- **Resolution:** `Button::command` and `Events::commanded` remove node/command
+  pairing while retaining distinct ID types and domains. Canonical state calls
+  remain explicit and are deferred, not promoted into a protocol feature,
+  until another application proves the same structured-state shape.
 
 ## CALC-F003 — The external app needs no raw WIT concepts
 
@@ -107,3 +111,41 @@ automatically authorize platform features.
 - **Impact:** Raw-WIT concept count is zero.
 - **Resolution:** Locked by source audit, `youth check`, semantic tests, and the
   exact SDK revision in `Youth.lock`.
+
+## CALC-F005 — Aligned text exposed a test-runner representation assumption
+
+- **Status:** Addressed
+- **Observed:** 2026-07-21
+- **Application:** Youth Calculator
+- **Workflow stage:** First protocol `0.0.3` `youth test`
+- **Platform:** macOS, headless runtime
+- **Local path:** `/Users/keina/dev/youth-calculator`
+- **Evidence:** The display mounted as normalized aligned text and diagnostics
+  printed `text("0")`, yet `expect text display "0"` rejected it because the
+  runner matched only the compact default-alignment enum variant.
+- **Developer impact:** Adding presentation intent incorrectly changed the
+  meaning of an existing semantic assertion.
+- **What leaked WIT details:** No app code leaked WIT, but a host normalization
+  detail leaked into tooling behavior.
+- **Resolution:** Text assertions now use the normalized semantic text
+  accessor. Alignment remains irrelevant unless a future assertion explicitly
+  tests it.
+
+## CALC-F006 — Template placeholders affected Git SDK discovery
+
+- **Status:** Addressed
+- **Observed:** 2026-07-21
+- **Application:** Youth Calculator
+- **Workflow stage:** Fresh exact-revision SDK resolution
+- **Platform:** macOS/Cargo
+- **Local path:** `/Users/keina/dev/youth-calculator`
+- **Evidence:** Cargo found the CLI's embedded template while scanning the Git
+  repository and diagnosed `{{package}}` as an invalid package name before
+  continuing to compile `youth-sdk`.
+- **Developer impact:** Successful SDK builds emitted an alarming unrelated
+  error, weakening fresh-install diagnostics.
+- **What felt repetitive or leaked:** Monorepo template implementation leaked
+  into an external dependency fetch.
+- **Resolution:** The template uses a valid package-name sentinel that the
+  generator replaces, and its source directory is explicitly excluded from
+  workspace discovery. Templates must be valid before rendering.
