@@ -9,7 +9,7 @@ automatically authorize platform features.
 | ID | Summary | Next decision |
 | --- | --- | --- |
 | CALC-F002 | Canonical state persistence remains repetitive | Keep explicit typed state until another app proves a common structured-state shape |
-| CALC-F009 | Manual display patches must converge with reconstructed view output | Gather evidence from more dynamic applications before changing the explicit-patch model |
+| CALC-F009 | Explicit updates can diverge from reconstructed view output | Gather evidence from more dynamic applications before changing the explicit-patch model |
 
 ## Findings index
 
@@ -18,11 +18,12 @@ automatically authorize platform features.
 | CALC-F001 | DP0 presentation cannot express a calculator layout | Addressed | Protocol `0.0.3` carries bounded layout/alignment/shortcut intent |
 | CALC-F002 | Command dispatch and canonical state persistence are repetitive | Deferred | SDK commands remove ID pairing; structured state remains unproven |
 | CALC-F003 | The external app needs no raw WIT concepts | Addressed | Preserve the DP0 SDK boundary while adding capabilities |
+| CALC-F004 | Compatibility normalization belongs at the runtime boundary | Addressed | Presentation, interaction, and tools consume normalized semantics rather than version-specific variants |
 | CALC-F005 | Semantic tests initially treated aligned text as a different role | Addressed | Test normalized semantic roles, not compact host representation variants |
 | CALC-F006 | Git SDK resolution inspected an invalid template placeholder manifest | Addressed | Embedded source templates must remain syntactically valid before rendering |
 | CALC-F007 | Activation-only tests could not prove keyboard policy | Addressed | Test logical keys and semantic focus through the host interaction layer |
 | CALC-F008 | The provisional font lacked common calculator punctuation | Addressed | Printable ASCII coverage belongs to the renderer; broader Unicode remains future text-stack work |
-| CALC-F009 | Incremental display updates create a view-convergence obligation | Deferred | Retain explicit patches while testing convergence and gathering evidence for later update models |
+| CALC-F009 | Explicit updates can diverge from reconstructed view output | Deferred | Retain explicit patches while testing convergence and gathering evidence for later update models |
 
 ## CALC-F001 — DP0 presentation cannot express a calculator layout
 
@@ -116,6 +117,20 @@ automatically authorize platform features.
 - **Resolution:** Locked by source audit, `youth check`, semantic tests, and the
   exact SDK revision in `Youth.lock`.
 
+## CALC-F004 — Compatibility normalization belongs at the runtime boundary
+
+- **Status:** Addressed
+- **Observed:** 2026-07-21
+- **Application:** Youth Calculator and unchanged DP0 Tally
+- **Workflow stage:** Protocol `0.0.3` host integration
+- **Platform:** Platform-independent runtime boundary
+- **Evidence:** Branching on `0.0.2` versus `0.0.3` inside layout, interaction,
+  rendering, or semantic testing would duplicate policy and make equivalent
+  roles behave differently across component versions.
+- **Resolution:** Both protocol worlds convert into the same normalized tree
+  and patch model at the runtime boundary. Downstream tools query normalized
+  semantics and remain independent of wire-version storage variants.
+
 ## CALC-F005 — Aligned text exposed a test-runner representation assumption
 
 - **Status:** Addressed
@@ -186,6 +201,7 @@ automatically authorize platform features.
 - **Platform:** macOS
 - **Local path:** `/Users/keina/dev/youth-calculator`
 - **Commit:** `8ef8e40`
+- **Resolution commit:** Youth `2761e35`
 - **Evidence:** The app deliberately labels controls with plain ASCII `+/-`,
   `/`, `*`, `-`, `+`, `.`, and `=`. Youth's deterministic 5x7 debug font only
   defines letters, digits, colon, hyphen, underscore, and space; its fallback
@@ -212,7 +228,7 @@ automatically authorize platform features.
   character. This is the final bounded extension of the debug font; a real
   Unicode text stack remains required before text-editing applications.
 
-## CALC-F009 — Incremental display updates must converge with fresh view output
+## CALC-F009 — Explicit updates can diverge from reconstructed view output
 
 - **Status:** Deferred
 - **Observed:** 2026-07-21
@@ -228,6 +244,10 @@ automatically authorize platform features.
   patched `"3.5"` display is reconstructed as `"3.5"` by a fresh `view` from
   durable state, but Youth does not generally compare a post-handle tree with
   a newly constructed view.
+- **Intended invariant:** After an accepted turn, applying its update to the
+  previous normalized tree should produce the same guest-owned semantic tree
+  as a fresh view from committed durable state. Host-owned interaction and
+  presentation state are excluded. DP1 does not generally enforce this.
 - **Developer impact:** This calculator has only one changing node, so explicit
   patching is easy. More dynamic apps could omit an affected node and produce
   a live tree that differs from restart or read-only resync output.
