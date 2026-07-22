@@ -9,6 +9,7 @@ automatically authorize platform features.
 | ID | Summary | Next decision |
 | --- | --- | --- |
 | CALC-F002 | Canonical state persistence remains repetitive | Keep explicit typed state until another app proves a common structured-state shape |
+| CALC-F008 | Common calculator punctuation renders as fallback question marks | Expand deterministic renderer glyph coverage or adopt a deterministic font implementation |
 
 ## Findings index
 
@@ -20,6 +21,7 @@ automatically authorize platform features.
 | CALC-F005 | Semantic tests initially treated aligned text as a different role | Addressed | Test normalized semantic roles, not compact host representation variants |
 | CALC-F006 | Git SDK resolution inspected an invalid template placeholder manifest | Addressed | Embedded source templates must remain syntactically valid before rendering |
 | CALC-F007 | Activation-only tests could not prove keyboard policy | Addressed | Test logical keys and semantic focus through the host interaction layer |
+| CALC-F008 | The provisional font lacks common calculator punctuation | Open | Treat printable-label coverage and fallback behavior as renderer policy |
 
 ## CALC-F001 — DP0 presentation cannot express a calculator layout
 
@@ -173,3 +175,36 @@ automatically authorize platform features.
   The calculator test now covers Tab, row arrows, Shift+Tab, character
   shortcuts, Enter/default, Escape/cancel, restart focus clearing, persistence,
   and a direct semantic activation in one real-runtime scenario.
+
+## CALC-F008 — The provisional font lacks common calculator punctuation
+
+- **Status:** Open
+- **Observed:** 2026-07-21
+- **Application:** Youth Calculator
+- **Workflow stage:** Native `youth run` presentation
+- **Platform:** macOS
+- **Local path:** `/Users/keina/dev/youth-calculator`
+- **Commit:** `8ef8e40`
+- **Evidence:** The app deliberately labels controls with plain ASCII `+/-`,
+  `/`, `*`, `-`, `+`, `.`, and `=`. Youth's deterministic 5x7 debug font only
+  defines letters, digits, colon, hyphen, underscore, and space; its fallback
+  glyph is a question mark. The native window therefore replaces every
+  unsupported punctuation character with `?`, while `-` renders correctly.
+- **Developer impact:** Common, semantically clear labels become ambiguous even
+  though the component tree, hit targets, shortcuts, and calculator behavior
+  are correct.
+- **What could not be expressed:** Nothing. The application already supplies
+  the intended UTF-8 labels.
+- **What felt repetitive:** Nothing in application code; changing labels to
+  words would merely work around a host renderer limitation.
+- **What leaked WIT details:** None.
+- **What required host policy:** Font selection, supported glyph repertoire,
+  missing-glyph fallback, text measurement, and deterministic rasterization.
+- **Unavoidable protocol addition:** None. Text already crosses the component
+  boundary correctly.
+- **What remains SDK/application behavior:** The label strings and command
+  semantics remain application-owned; neither the SDK nor the app should know
+  which glyphs a host renderer can draw.
+- **Next decision:** Expand the provisional font to cover the required ASCII
+  punctuation with deterministic frame fixtures, or replace it with a broader
+  deterministic font implementation during renderer work.
