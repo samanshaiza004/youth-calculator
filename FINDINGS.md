@@ -9,7 +9,7 @@ automatically authorize platform features.
 | ID | Summary | Next decision |
 | --- | --- | --- |
 | CALC-F002 | Canonical state persistence remains repetitive | Keep explicit typed state until another app proves a common structured-state shape |
-| CALC-F008 | Common calculator punctuation renders as fallback question marks | Expand deterministic renderer glyph coverage or adopt a deterministic font implementation |
+| CALC-F009 | Manual display patches must converge with reconstructed view output | Gather evidence from more dynamic applications before changing the explicit-patch model |
 
 ## Findings index
 
@@ -21,7 +21,8 @@ automatically authorize platform features.
 | CALC-F005 | Semantic tests initially treated aligned text as a different role | Addressed | Test normalized semantic roles, not compact host representation variants |
 | CALC-F006 | Git SDK resolution inspected an invalid template placeholder manifest | Addressed | Embedded source templates must remain syntactically valid before rendering |
 | CALC-F007 | Activation-only tests could not prove keyboard policy | Addressed | Test logical keys and semantic focus through the host interaction layer |
-| CALC-F008 | The provisional font lacks common calculator punctuation | Open | Treat printable-label coverage and fallback behavior as renderer policy |
+| CALC-F008 | The provisional font lacked common calculator punctuation | Addressed | Printable ASCII coverage belongs to the renderer; broader Unicode remains future text-stack work |
+| CALC-F009 | Incremental display updates create a view-convergence obligation | Deferred | Retain explicit patches while testing convergence and gathering evidence for later update models |
 
 ## CALC-F001 — DP0 presentation cannot express a calculator layout
 
@@ -176,9 +177,9 @@ automatically authorize platform features.
   shortcuts, Enter/default, Escape/cancel, restart focus clearing, persistence,
   and a direct semantic activation in one real-runtime scenario.
 
-## CALC-F008 — The provisional font lacks common calculator punctuation
+## CALC-F008 — The provisional font lacked common calculator punctuation
 
-- **Status:** Open
+- **Status:** Addressed
 - **Observed:** 2026-07-21
 - **Application:** Youth Calculator
 - **Workflow stage:** Native `youth run` presentation
@@ -205,6 +206,45 @@ automatically authorize platform features.
 - **What remains SDK/application behavior:** The label strings and command
   semantics remain application-owned; neither the SDK nor the app should know
   which glyphs a host renderer can draw.
-- **Next decision:** Expand the provisional font to cover the required ASCII
-  punctuation with deterministic frame fixtures, or replace it with a broader
-  deterministic font implementation during renderer work.
+- **Resolution:** Youth's provisional renderer now covers all 95 printable
+  ASCII characters (`U+0020..=U+007E`). Tests lock every calculator operator
+  glyph and a representative pixel fixture rather than one golden fixture per
+  character. This is the final bounded extension of the debug font; a real
+  Unicode text stack remains required before text-editing applications.
+
+## CALC-F009 — Incremental display updates must converge with fresh view output
+
+- **Status:** Deferred
+- **Observed:** 2026-07-21
+- **Application:** Youth Calculator
+- **Workflow stage:** Gate C source and restart-test audit
+- **Platform:** Platform-independent source and headless runtime
+- **Local path:** `/Users/keina/dev/youth-calculator`
+- **Commit:** `8ef8e40`
+- **Evidence:** Both `Application::view` and `Application::handle` call the same
+  `Model::display` formatter, so the formatting algorithm is not duplicated.
+  The handler must still know that the `display` node is affected and return a
+  `set_text` update. The restart acceptance test proves that the incrementally
+  patched `"3.5"` display is reconstructed as `"3.5"` by a fresh `view` from
+  durable state, but Youth does not generally compare a post-handle tree with
+  a newly constructed view.
+- **Developer impact:** This calculator has only one changing node, so explicit
+  patching is easy. More dynamic apps could omit an affected node and produce
+  a live tree that differs from restart or read-only resync output.
+- **What could not be expressed:** An automatic assertion that an accepted
+  patch and a fresh view of committed state are semantically identical.
+- **What felt repetitive:** The display node name and `model.display()` call
+  appear in both initial view construction and update construction; the actual
+  formatting logic remains shared.
+- **What leaked WIT details:** None. `Update::set_text` is an SDK semantic API,
+  and the app does not see revisions or raw patches.
+- **What required host policy:** Transaction ordering and authoritative-tree
+  installation remain host-owned. Choosing when to execute or compare a fresh
+  view would also be runtime/tooling policy.
+- **Unavoidable protocol addition:** None demonstrated by this application.
+- **What remains SDK/application behavior:** Explicit update construction and
+  the shared display formatter remain appropriate for DP1.
+- **Next decision:** Keep explicit patches while Scratchpad, Timer, and Todo
+  reveal whether manual affected-node knowledge becomes repetitive or unsafe.
+  Compare three later directions only with that evidence: explicit patches,
+  SDK tree diffing, or declared reactive dependencies.
