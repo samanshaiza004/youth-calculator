@@ -24,6 +24,7 @@ automatically authorize platform features.
 | CALC-F007 | Activation-only tests could not prove keyboard policy | Addressed | Test logical keys and semantic focus through the host interaction layer |
 | CALC-F008 | The provisional font lacked common calculator punctuation | Addressed | Printable ASCII coverage belongs to the renderer; broader Unicode remains future text-stack work |
 | CALC-F009 | Explicit updates can diverge from reconstructed view output | Deferred | Retain explicit patches while testing convergence and gathering evidence for later update models |
+| CALC-F010 | Independent host builds are valid but not byte-reproducible | Addressed | Build one canonical component and exercise those exact bytes on every host; retain native builds as separate portability evidence |
 
 ## CALC-F001 — DP0 presentation cannot express a calculator layout
 
@@ -268,3 +269,36 @@ automatically authorize platform features.
   reveal whether manual affected-node knowledge becomes repetitive or unsafe.
   Compare three later directions only with that evidence: explicit patches,
   SDK tree diffing, or declared reactive dependencies.
+
+## CALC-F010 — Independent host builds are not byte-reproducible
+
+- **Status:** Addressed
+- **Observed:** 2026-07-29
+- **Application:** Youth Calculator
+- **Workflow stage:** Gate D cross-platform component identity
+- **Platforms:** Ubuntu, Windows, and macOS GitHub-hosted runners
+- **Local path:** `/Users/keina/dev/youth-calculator`
+- **Commit:** `fe962a0`
+- **Evidence:** All three host jobs passed `youth check`, `youth test`, release
+  build, component validation, native smoke, and clean-tree checks, but their
+  independently built release components had three different SHA-256 values.
+  The host-built components were semantically compatible; their bytes were not
+  reproducible across host build environments.
+- **Developer impact:** A gate that compares independently built artifacts
+  conflates source portability with reproducible-build guarantees and cannot
+  prove that one published component runs unchanged everywhere.
+- **What could not be expressed:** Nothing in calculator source. This is build
+  and release evidence, not an application capability gap.
+- **What felt repetitive:** Every host rebuilt the same locked component even
+  though the intended portability claim concerns one component artifact.
+- **What leaked WIT details:** None.
+- **What required host policy:** CI must distinguish a canonical artifact from
+  host-local compatibility builds and decide which bytes each host executes.
+- **Unavoidable protocol addition:** None.
+- **What remains SDK/application behavior:** The calculator remains an ordinary
+  locked SDK application; reproducible builds may be investigated separately.
+- **Resolution:** CI builds one canonical calculator component once, records
+  its SHA-256, distributes those exact bytes to all hosts, and mounts it with
+  each host runtime. Host-local `youth check`, `youth test`, and release builds
+  remain as separate source-portability evidence and their hashes are logged
+  without being treated as the published component identity.
